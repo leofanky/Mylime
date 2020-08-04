@@ -33,7 +33,7 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
-class Key(db.model):
+class Key(db.MSodel):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     public_key = db.Column(db.Text, unique=True, nullable=False)
