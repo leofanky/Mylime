@@ -15,6 +15,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
+    public_key = db.relationship('Keys', backref = 'owner', lazy = True )
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
@@ -31,5 +32,17 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
+
+class Key(db.model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    public_key = db.Column(db.Text, unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"Key('{self.public_key}','{self.user_id}')"
+
+
+
+
 
 
