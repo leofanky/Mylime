@@ -3,10 +3,10 @@ import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
 from app import app, db, bcrypt
-from app.forms import RegistrationForm, LoginForm, UpdateAccountForm, keys_Validation_Form
-from app.models import User, Key
+from app.forms import RegistrationForm, LoginForm, UpdateAccountForm, KeyForm
 from flask_login import login_user, current_user, logout_user, login_required
-
+from app.models import User, Key
+from Crypto.PublicKey import RSA
 
 
 
@@ -73,23 +73,26 @@ def save_picture(form_picture):
     return picture_fn
 
 
-@app.route("/keys/new", methods=['GET, POST'])
+@app.route("/keys/new", methods=['GET', 'POST'])
 @login_required
 def new_keys():
-    def generate():
-        new_key = RSA.generate(2048, e=65537)
-        private_key, public_key = key.exportKey(), key.publickey().exportKey()
-        keys = Key(public_key=form.public_key.data, user = current_user)
-        db.session.add(Key)
+    form = KeyForm()
+    if form.validate_on_submit():
+        keys = RSA.generate(2048, e=65537)
+        private_key = keys.export_key()
+        public_key = keys.publickey().export_key()
+        key = Key(title=form.title.data, public_key=public_key, owner=current_user)
+        db.session.add(key)
         db.session.commit()
         flash(f'your key {private_key} , save it somewhere secure')
+        return redirect(url_for('home'))
 
-    return render_template('create_keys.html', title='keys', private_key=private_key)
-                           
-@app.route("/keys/<str:public_key>")
-def keys(keys_id):
-    return render_template('keys.html')
+    return render_template('new_keys.html', title='new_keys', form=form)
 
+
+# @app.route("/keys/<str:public_key>")
+# def keys(keys_id):
+#     return render_template('keys.html')
 
 
 # @app.route("/keys/<str:public_key>/Validate", methods=['GET', 'POST'])
